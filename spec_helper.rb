@@ -14,17 +14,19 @@
 #
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 RSpec.configure do |config|
-  config.define_derived_metadata(type: :model) do |meta|
-    # ...
-    meta[:matched_by_type_model] = true
+  config.filter_run_when_matching :focus
+end
+
+RSpec.describe "With no examples focused" do
+  it "only runs if no other examples are focused" do
   end
 end
 
-RSpec.describe do
-  it 'matches type: :model', type: :model do |example|
-    expect(example.metadata).to include(matched_by_type_model: true)
+RSpec.describe "With an example focused" do
+  it "runs alone when focused", :focus => !!ENV['FOCUS_AN_EXAMPLE'] do
   end
 end
+
 
   # rspec-expectations config goes here. You can use an alternate
   # assertion/expectation library such as wrong or the stdlib/minitest
@@ -40,6 +42,31 @@ end
     expectations.include_chain_clauses_in_custom_matcher_descriptions = true
   end
 
+  if ENV['SIMULATE_JRUBY']
+    original_ruby_platform = RUBY_PLATFORM
+    Object.send(:remove_const, :RUBY_PLATFORM)
+    RUBY_PLATFORM = 'java'
+  end
+  
+  RSpec.configure do |config|
+    config.filter_run_excluding :jruby_only unless RUBY_PLATFORM == 'java'
+  end
+  
+  if ENV['SIMULATE_JRUBY']
+    Object.send(:remove_const, :RUBY_PLATFORM)
+    RUBY_PLATFORM = original_ruby_platform
+  end
+  
+  RSpec.describe "All rubies" do
+    it "always runs" do
+    end
+  end
+  
+  RSpec.describe "Only on JRuby", :jruby_only do
+    it "always runs" do
+    end
+  end
+  
   # rspec-mocks config goes here. You can use an alternate test double
   # library (such as bogus or mocha) by changing the `mock_with` option here.
   config.mock_with :rspec do |mocks|
