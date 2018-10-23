@@ -14,6 +14,18 @@
 #
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 RSpec.configure do |config|
+  config.define_derived_metadata(type: :model) do |meta|
+    # ...
+    meta[:matched_by_type_model] = true
+  end
+end
+
+RSpec.describe do
+  it 'matches type: :model', type: :model do |example|
+    expect(example.metadata).to include(matched_by_type_model: true)
+  end
+end
+
   # rspec-expectations config goes here. You can use an alternate
   # assertion/expectation library such as wrong or the stdlib/minitest
   # assertions if you prefer.
